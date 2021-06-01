@@ -69,3 +69,5 @@ ENTITY_SKELETON = {
     },
     "properties_list": { "action": "added tag" }
   }
+
+DEBUG_ENTITY_FILE = common.get_environment_variable('DEBUG_ENTITY_FILE', '/home/ronenk1/dev/automation-tests-vector/geojsons/small_70k_Alaska.geojson')
