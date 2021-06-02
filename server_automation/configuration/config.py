@@ -1,5 +1,7 @@
 # pylint: disable=line-too-long
 """ configuration interface """
+import os
+from datetime import datetime
 import enum
 from mc_automation_tools import common
 class ResponseCode(enum.Enum):
@@ -32,11 +34,32 @@ EXT_FOR_SYNC_FILE = common.get_environment_variable('EXT_FOR_SYNC_FILE', 'json')
 EXEC_TYPE_FULL = 'FULL'
 EXEC_TYPE_DIFF = 'DIFF'
 SYNC_DATA_URL = common.get_environment_variable('SYNC_DATA_URL', 'http://10.8.1.9/full.json')
-STORE_DATA_DIR = common.get_environment_variable('STORE_DATA_DIR', '/tmp')
 
+Z_TIME = datetime.now().strftime('vector_%Y%m_%d_%H_%M_%S')
+
+BASE_STORAGE_DATA_DIR = common.get_environment_variable('BASE_STORAGE_DATA_DIR', '/tmp')
+RELATIVE_DIR = common.get_environment_variable('RELATIVE_DIR', os.path.join('vector_data', Z_TIME))
+STORE_DATA_DIR = os.path.join(BASE_STORAGE_DATA_DIR, RELATIVE_DIR)
+STATIC_URL_FOR_FILES = common.get_environment_variable('STATIC_URL_FOR_FILES', 'http://10.45.128.55:5000/')
 ################################################ response messeages ####################################################
 
 USE_JIRA = common.get_environment_variable('USE_JIRA', False)
+
+SYNC_LAYER_SKELETON = {
+   "files": [
+      {
+         "layer_id": 614,
+         "exec_type": "FULL",
+         "created": "2021-05-22T21:00:04Z",
+         "files": [
+            {
+               "file_name": "http://10.8.1.9/entities.zip",
+               "file_count": 1
+            }
+         ]
+      }
+   ]
+}
 
 ENTITY_SKELETON = {
    "exclusive_id": {
