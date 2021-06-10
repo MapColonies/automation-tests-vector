@@ -4,7 +4,7 @@ from datetime import datetime
 
 import geojson
 
-from server_automation.support_utilities import layer_generator
+from server_automation.support_utilities import layer_generator, diff_generator
 from server_automation.configuration import config
 import os
 # Z_TIME = datetime.now().strftime('vector_%Y%m_%d_%H_%M_%S')
@@ -15,9 +15,13 @@ import os
 
 # geojson.utils.generate_random("Polygon")
 # layer_generator.generate_entity_json(source=config.DEBUG_ENTITY_FILE)
-layer_generator.generate_single_full_json(layer_id=config.LAYER_ID_B,
-                                          n_zips=10,
-                                          n_files=10,
-                                          n_objects=10,
-                                          output_dir=config.STORE_DATA_DIR)
+# layer_generator.generate_single_full_json(layer_id=config.LAYER_ID_B,
+#                                           n_zips=10,
+#                                           n_files=10,
+#                                           n_objects=700,
+#                                           output_dir=config.STORE_DATA_DIR)
 # layer_generator.generate_entity_file(config.LAYER_ID_B, n_zips=20, n_files=20, n_objects=20, output_dir=output_dir)
+
+from server_automation.postgress import postgres_adapter
+
+diff_generator.generate_new_diff(layer_id=config.LAYER_ID_B)

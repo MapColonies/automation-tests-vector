@@ -6,6 +6,7 @@ import datetime
 import shutil
 from server_automation.configuration import config
 from mc_automation_tools import common, geometry
+from server_automation.postgress import postgres_adapter as pa
 from dataclasses import dataclass
 import logging
 
@@ -113,7 +114,9 @@ def generate_entity_file(layer_id, n_zips=10, n_files=10, n_objects=10,
         _log.info(f'Generating zip {i + 1}\\{n_zips}: {zip_id}, into: {zip_dir}')
         result_files = generate_entity_json(n_files, n_objects, start_idx=offset, source=polygons)
         for idx, file in enumerate(result_files):
-            json.dump(file, open(os.path.join(zip_dir, "_".join([os.path.basename(zip_id), str(idx)])), "w"))
+            unique_file_id = "_".join([layer_id, common.generate_uuid()])
+            json.dump(file, open(os.path.join(zip_dir, unique_file_id), "w"))
+            # json.dump(file, open(os.path.join(zip_dir, "_".join([os.path.basename(zip_id), str(idx)])), "w"))
         shutil.make_archive(zip_dir, 'zip', zip_dir)
         shutil.rmtree(zip_dir)
     _log.info(f'Finish creating:\n'
@@ -122,18 +125,6 @@ def generate_entity_file(layer_id, n_zips=10, n_files=10, n_objects=10,
               f'- entities on each file: {n_objects}\n'
               f'*** Total data: {n_zips * n_files * n_objects} entities ***')
     return output_dir, zip_names
-    # output_final = os.path.join(output_dir, "_".join([str(layer_id), common.generate_uuid()]))
-    # if not os.path.exists(output_final):
-    #     os.makedirs(output_final)
-    # _log.info(
-    #     f'Result of new generated file will be placed on: {output_dir}, File name: {os.path.basename(output_final)}')
-    # result_files = generate_entity_json(n_files, n_objects, source=polygons)
-    # for idx, file in enumerate(result_files):
-    #     json.dump(file, open(os.path.join(output_final, "_".join([os.path.basename(output_final), str(idx)])), "w"))
-    #
-    # # create entity zip file and remove temporary folder
-    # shutil.make_archive(output_final, 'zip', output_final)
-    # shutil.rmtree(output_final)
 
 
 def generate_entity_json(num_of_files=10, entities_per_file=10, start_idx=0, source=None):
@@ -141,6 +132,13 @@ def generate_entity_json(num_of_files=10, entities_per_file=10, start_idx=0, sou
     This method generate json file entity with polygons
     :return: json object with entities
     """
+
+    try:
+        pa.create_full_table(config.PG_TABLE_NAME)
+    except Exception as e:
+        _log.warning(f'Table {config.PG_TABLE_NAME} already exists, will insert values to exists!')
+        _log.warning(f'{str(e)}')
+
     entities_list = []
     total_entities = num_of_files * entities_per_file
     current_poly_idx = 0 + start_idx
@@ -151,16 +149,16 @@ def generate_entity_json(num_of_files=10, entities_per_file=10, start_idx=0, sou
         polygons = source_data['features']
     else:
         polygons = source
-    # _log.info(f'Total number of features on data source: {len(polygons)}')
     _log.info(f'Start generate {current_poly_idx + 1}-{current_poly_idx + total_entities} entities: \n')
     for i in range(num_of_files):
         entities_file = []
+        entities_params = []
         for j in range(entities_per_file):
             _log.info(
                 f'Generating entity number {current_poly_idx + 1} related zip idx {(start_idx // num_of_files // entities_per_file) + 1} under file: {i + 1}, number in file: {j + 1}')
             entity = config.ENTITY_SKELETON
             entity['exclusive_id']['entity_id'] = '{%s}' % common.generate_uuid()
-            entity['exclusive_id']['name'] = "_".join(['Building', str(current_poly_idx)])
+            entity['exclusive_id']['name'] = "_".join([config.LAYER_NAME, str(current_poly_idx)])
             entity['date'] = datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')
             entity['geo']['geo_json']['coordinates'] = polygons[current_poly_idx]['geometry']['coordinates']
             entity['geo']['area'] = geometry.get_polygon_area(entity['geo']['geo_json']['coordinates'][0])
@@ -168,12 +166,25 @@ def generate_entity_json(num_of_files=10, entities_per_file=10, start_idx=0, sou
             entity['properties_list']['BUILDING'] = 'YES'
 
             current_poly_idx += 1
+            db_params = {
+                'uuid': entity['exclusive_id']['entity_id'],
+                'layer_id': config.LAYER_ID,
+                'name': entity['exclusive_id']['name'],
+                'layer_type': config.LAYER_NAME,
+                'cdatetime': str(datetime.datetime.now()),
+                'udatatime': str(datetime.datetime.now()),
+                'geo_json': json.dumps(entity['geo']['geo_json']),
+                'entity_json': json.dumps(entity),
+                'diff' : 0
+            }
+            entities_params.append(db_params)
+            # insert_entity_to_db(db_params)
             entities_file.append(copy.deepcopy(entity))
+        pa.insert_entity_to_db(entities_params, config.PG_TABLE_NAME)
         entities_list.append(copy.deepcopy(entities_file))
-    # _log.info(f'\nCreated total {current_poly_idx} out of {total_entities} required\n'
-    #           f'Number of groups: {num_of_files}\n'
-    #           f'Number of entities per group: {entities_per_file}')
+
     _log.info(
-        f'Finish generating entities: {current_poly_idx}-{current_poly_idx + total_entities} for group: {i + 1}, number in group: {j + 1}')
+        f'Finish generating entities: {current_poly_idx}-{current_poly_idx + total_entities} for group: {i + 1}, '
+        f'number in group: {j + 1}')
 
     return entities_list

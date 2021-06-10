@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 import enum
 from mc_automation_tools import common
+
 class ResponseCode(enum.Enum):
     """
     Types of server responses
@@ -28,13 +29,22 @@ class ResponseCode(enum.Enum):
 # S3_ACCESS_KEY = common.get_environment_variable('S3_ACCESS_KEY', None)
 # S3_SECRET_KEY = common.get_environment_variable('S3_SECRET_KEY', None)
 # S3_END_POINT = common.get_environment_variable('S3_END_POINT', None)
+################################################# postgress credits ####################################################
+UPDATE_DB = common.get_environment_variable('UPDATE_DB', True)
+PG_USER = common.get_environment_variable('PG_USER', None)
+PG_PASS = common.get_environment_variable('PG_PASS', None)
+PG_HOST = common.get_environment_variable('PG_HOST', 'localhost')
+PG_DB_NAME = common.get_environment_variable('PG_DB_NAME', 'vector-automation-tests')
+PG_TABLE_NAME = common.get_environment_variable('PG_TABLE_NAME', 'buildings')
 #################################################### general ###########################################################
 LAYER_ID_B = common.get_environment_variable('LAYER_ID_B', 614)
+LAYER_ID = common.get_environment_variable('LAYER_ID', 614)
+LAYER_NAME = common.get_environment_variable('LAYER_NAME', 'building')
 EXT_FOR_SYNC_FILE = common.get_environment_variable('EXT_FOR_SYNC_FILE', 'json')
 EXEC_TYPE_FULL = 'FULL'
 EXEC_TYPE_DIFF = 'DIFF'
 SYNC_DATA_URL = common.get_environment_variable('SYNC_DATA_URL', 'http://10.8.1.9/full.json')
-
+DIFF_SAMPLES = common.get_environment_variable('DIFF_SAMPLES', 10000)
 Z_TIME = datetime.now().strftime('vector_%Y%m_%d_%H_%M_%S')
 
 BASE_STORAGE_DATA_DIR = common.get_environment_variable('BASE_STORAGE_DATA_DIR', '/tmp')
@@ -90,7 +100,8 @@ ENTITY_SKELETON = {
       "area": 1.123,
       "perimeter": 0.03
     },
-    "properties_list": { "action": "added tag" }
+    "properties_list": {"action": "added tag"}
   }
 
-DEBUG_ENTITY_FILE = common.get_environment_variable('DEBUG_ENTITY_FILE', '/home/ronenk1/dev/automation-tests-vector/geojsons/small_70k_Alaska.geojson')
+DEBUG_ENTITY_FILE = common.get_environment_variable('DEBUG_ENTITY_FILE', '/home/ronenk1/dev/automation-tests-vector/geojsons/DistrictofColumbia.geojson')
+
