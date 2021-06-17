@@ -15,13 +15,27 @@ import os
 
 # geojson.utils.generate_random("Polygon")
 # layer_generator.generate_entity_json(source=config.DEBUG_ENTITY_FILE)
+
+
+
+
+
+
 # layer_generator.generate_single_full_json(layer_id=config.LAYER_ID_B,
 #                                           n_zips=10,
 #                                           n_files=10,
 #                                           n_objects=700,
 #                                           output_dir=config.STORE_DATA_DIR)
-# layer_generator.generate_entity_file(config.LAYER_ID_B, n_zips=20, n_files=20, n_objects=20, output_dir=output_dir)
 
-from server_automation.postgress import postgres_adapter
+# from server_automation.postgress import postgres_adapter
 
-diff_generator.generate_new_diff(layer_id=config.LAYER_ID_B)
+res = diff_generator.generate_new_diff(layer_id=config.LAYER_ID_B)
+output_file = res['storage']
+res = diff_generator.create_diff_json(res['storage'], config.LAYER_ID_B, res['zips'])
+print(res)
+body = config.DIFF_SKELETON
+body['files'].clear()
+body['files'] = [res]
+import json
+with open(os.path.join(output_file,'diff.json'),'w') as fp:
+    json.dump(body,fp)

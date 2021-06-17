@@ -3,6 +3,7 @@ import os
 import json
 import copy
 import datetime
+import random
 import shutil
 from server_automation.configuration import config
 from mc_automation_tools import common, geometry
@@ -54,6 +55,7 @@ def generate_single_full_json(layer_id, n_zips=10, n_files=10, n_objects=10,
 
     single_file = copy.deepcopy(config.SYNC_LAYER_SKELETON)
     single_file['files'][0]['layer_id'] = layer_id
+    # single_file['files'][0]['diff_version'] = 0
     single_file['files'][0]['exec_type'] = config.EXEC_TYPE_FULL
     single_file['files'][0]['created'] = current_date
     single_file['files'][0]['files'].clear()
@@ -68,7 +70,8 @@ def generate_single_full_json(layer_id, n_zips=10, n_files=10, n_objects=10,
             count_in_zip = len(archive.infolist())
         file_uri = output_url + '/' + file
         single_file['files'][0]['files'].append({'file_name': file_uri, 'file_count': count_in_zip})
-    with open(os.path.join(files_output_dir, "res.json"), 'w') as fp:
+    res_file_name = ".".join(["_".join(['full',config.Z_TIME]),'json'])
+    with open(os.path.join(files_output_dir, res_file_name), 'w') as fp:
         json.dump(single_file, fp, indent=4)
     print(single_file)
 
@@ -164,6 +167,8 @@ def generate_entity_json(num_of_files=10, entities_per_file=10, start_idx=0, sou
             entity['geo']['area'] = geometry.get_polygon_area(entity['geo']['geo_json']['coordinates'][0])
             entity['geo']['perimeter'] = geometry.get_polygon_perimeter(entity['geo']['geo_json']['coordinates'][0])
             entity['properties_list']['BUILDING'] = 'YES'
+            entity['properties_list']['diff'] ='0'
+            entity['properties_list']['RELATIVE_HEIGHT'] = random.uniform(config.MIN_HEIGHT_PROP, config.MAX_HEIGHT_PROP)
 
             current_poly_idx += 1
             db_params = {

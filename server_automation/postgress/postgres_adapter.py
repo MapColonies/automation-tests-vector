@@ -23,12 +23,13 @@ def create_full_table(table_name=config.PG_TABLE_NAME):
 
 def insert_entity_to_db(entities_params, table_name=config.PG_TABLE_NAME):
     """
-    This method insert list of params into table :param table_name:table to insert - as default take name from
-    config=> PG_TABLE_NAME :param entities_params: dictionary including keys: uuid[str], layer_id[str], name[str],
+    This method insert list of params into table
+    :param table_name:table to insert - as default take name from config=> PG_TABLE_NAME
+    :param entities_params: dictionary including keys: uuid[str], layer_id[str], name[str],
     layer_type[str], cdatetime[str], udatetime[str], geo_json[json], entity_json[str]
     """
     client = postgres.PGClass(config.PG_HOST, config.PG_DB_NAME, config.PG_USER, config.PG_PASS)
-    body = f'INSERT INTO "{table_name}"("entity_id","layer_id","name","type","diff",dateCreation,updateCreation,"polygon","json_object")' \
+    body = f'INSERT INTO "{table_name}"("entity_id","layer_id","name","type","diff",dateCreation,updateCreation,"polygon" ,"json_object")' \
            f"VALUES"
     values = ""
     for params in entities_params:
@@ -55,4 +56,27 @@ def get_last_insertion_idx(column='increment_index', table_name=config.PG_TABLE_
 
 def get_all_entities_id(table_name=config.PG_TABLE_NAME):
     client = postgres.PGClass(config.PG_HOST, config.PG_DB_NAME, config.PG_USER, config.PG_PASS)
-    return client.get_column_by_name(table_name, 'entities_id')
+    return client.get_column_by_name(table_name, 'entity_id')
+
+
+def get_json_by_id(uuid, table_name=config.PG_TABLE_NAME):
+    if isinstance(uuid, str):
+        uuid = [uuid]
+    client = postgres.PGClass(config.PG_HOST, config.PG_DB_NAME, config.PG_USER, config.PG_PASS)
+    return client.get_by_n_argument(table_name, 'entity_id', uuid, 'json_object')
+
+
+def update_json_on_db(list_of_changes, table_name=config.PG_TABLE_NAME):
+    client = postgres.PGClass(config.PG_HOST, config.PG_DB_NAME, config.PG_USER, config.PG_PASS)
+    client.update_multi_with_multi(table_name, 'entity_id', 'json_object', list_of_changes, 'uuid', 'json')
+    pass
+
+def update_diff_on_db(list_of_changes, table_name=config.PG_TABLE_NAME):
+    client = postgres.PGClass(config.PG_HOST, config.PG_DB_NAME, config.PG_USER, config.PG_PASS)
+    client.update_multi_with_multi(table_name, 'entity_id', 'diff', list_of_changes, 'uuid', 'integer')
+    pass
+
+def get_diff_version(values, table_name=config.PG_TABLE_NAME):
+    client = postgres.PGClass(config.PG_HOST, config.PG_DB_NAME, config.PG_USER, config.PG_PASS)
+    res = client.get_by_n_argument(table_name, 'entity_id', values, 'diff')
+    return res
