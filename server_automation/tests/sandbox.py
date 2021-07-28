@@ -21,11 +21,11 @@ import os
 
 
 
-# layer_generator.generate_single_full_json(layer_id=config.LAYER_ID_B,
-#                                           n_zips=10,
-#                                           n_files=10,
-#                                           n_objects=700,
-#                                           output_dir=config.STORE_DATA_DIR)
+layer_generator.generate_single_full_json(layer_id=config.LAYER_ID_B,
+                                          n_zips=10,
+                                          n_files=10,
+                                          n_objects=700,
+                                          output_dir=config.STORE_DATA_DIR)
 
 # from server_automation.postgress import postgres_adapter
 

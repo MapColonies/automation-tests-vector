@@ -70,7 +70,7 @@ def generate_single_full_json(layer_id, n_zips=10, n_files=10, n_objects=10,
             count_in_zip = len(archive.infolist())
         file_uri = output_url + '/' + file
         single_file['files'][0]['files'].append({'file_name': file_uri, 'file_count': count_in_zip})
-    res_file_name = ".".join(["_".join(['full',config.Z_TIME]),'json'])
+    res_file_name = ".".join(["_".join(['full',config.Z_TIME]), 'json'])
     with open(os.path.join(files_output_dir, res_file_name), 'w') as fp:
         json.dump(single_file, fp, indent=4)
     print(single_file)
@@ -117,8 +117,8 @@ def generate_entity_file(layer_id, n_zips=10, n_files=10, n_objects=10,
         _log.info(f'Generating zip {i + 1}\\{n_zips}: {zip_id}, into: {zip_dir}')
         result_files = generate_entity_json(n_files, n_objects, start_idx=offset, source=polygons)
         for idx, file in enumerate(result_files):
-            unique_file_id = "_".join([layer_id, common.generate_uuid()])
-            json.dump(file, open(os.path.join(zip_dir, unique_file_id), "w"))
+            unique_file_id = ".".join([("_".join([layer_id, common.generate_uuid()])), 'txt'])
+            json.dump(file, open(os.path.join(zip_dir, unique_file_id), "w", encoding='utf-8'), ensure_ascii=False)
             # json.dump(file, open(os.path.join(zip_dir, "_".join([os.path.basename(zip_id), str(idx)])), "w"))
         shutil.make_archive(zip_dir, 'zip', zip_dir)
         shutil.rmtree(zip_dir)
@@ -169,6 +169,7 @@ def generate_entity_json(num_of_files=10, entities_per_file=10, start_idx=0, sou
             entity['properties_list']['BUILDING'] = 'YES'
             entity['properties_list']['diff'] ='0'
             entity['properties_list']['RELATIVE_HEIGHT'] = random.uniform(config.MIN_HEIGHT_PROP, config.MAX_HEIGHT_PROP)
+            entity['properties_list']['createdBy'] = 'רמטכ"ל'
 
             current_poly_idx += 1
             db_params = {
